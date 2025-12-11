@@ -41,7 +41,7 @@ jobs:
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           S3_BUCKET="elasticbeanstalk-${{ secrets.AWS_REGION }}-${ACCOUNT_ID}"
-          aws s3 cp app.zip s3://$S3_BUCKET/app-${{ github.run_id }}.zip
+          aws s3 cp app.zip s3://$S3_BUCKET/app-${{ github.run_number }}.zip
 
       - name: Create EB Application Version
         run: |
@@ -50,11 +50,11 @@ jobs:
 
           aws elasticbeanstalk create-application-version \
             --application-name "${{ secrets.EB_APP_NAME }}" \
-            --version-label "v-${{ github.run_id }}" \
-            --source-bundle S3Bucket="$S3_BUCKET",S3Key="app-${{ github.run_id }}.zip"
+            --version-label "v-${{ github.run_number }}" \
+            --source-bundle S3Bucket="$S3_BUCKET",S3Key="app-${{ github.run_number }}.zip"
 
       - name: Deploy to Elastic Beanstalk
         run: |
           aws elasticbeanstalk update-environment \
             --environment-name "${{ secrets.EB_ENV_NAME }}" \
-            --version-label "v-${{ github.run_id }}"
+            --version-label "v-${{ github.run_number }}"
