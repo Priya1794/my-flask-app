@@ -28,7 +28,9 @@ jobs:
 
       - name: Create zip file
         run: |
-          zip -r app.zip . -x "*.git*" "*.github*"
+          ZIP_NAME="${{ secrets.EB_APP_NAME }}-v${{ github.run_number }}.zip"
+          zip -r "$ZIP_NAME" . -x "*.git*" "*.github*"
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -41,20 +43,22 @@ jobs:
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           S3_BUCKET="elasticbeanstalk-${{ secrets.AWS_REGION }}-${ACCOUNT_ID}"
-          aws s3 cp app.zip s3://$S3_BUCKET/app-${{ github.run_number }}.zip
+          aws s3 cp "$ZIP_NAME" s3://$S3_BUCKET/"$ZIP_NAME"
 
       - name: Create EB Application Version
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           S3_BUCKET="elasticbeanstalk-${{ secrets.AWS_REGION }}-${ACCOUNT_ID}"
 
+          VERSION_LABEL="v-${{ github.run_number }}"
           aws elasticbeanstalk create-application-version \
             --application-name "${{ secrets.EB_APP_NAME }}" \
-            --version-label "v-${{ github.run_number }}" \
-            --source-bundle S3Bucket="$S3_BUCKET",S3Key="app-${{ github.run_number }}.zip"
+            --version-label "$VERSION_LABEL" \
+            --source-bundle S3Bucket="$S3_BUCKET",S3Key="$ZIP_NAME"
 
       - name: Deploy to Elastic Beanstalk
         run: |
+          VERSION_LABEL="v-${{ github.run_number }}"
           aws elasticbeanstalk update-environment \
             --environment-name "${{ secrets.EB_ENV_NAME }}" \
-            --version-label "v-${{ github.run_number }}"
+            --version-label "$VERSION_LABEL"
