@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Laptop",
+    "desc": "High performance laptop",
+    "price": 65000
+  },
+  {
+    "id": 2,
+    "name": "Headphones",
+    "desc": "Noise cancelling",
+    "price": 5000
+  },
+  {
+    "id": 3,
+    "name": "Keyboard",
+    "desc": "Mechanical RGB keyboard",
+    "price": 3000
+  }
+]
